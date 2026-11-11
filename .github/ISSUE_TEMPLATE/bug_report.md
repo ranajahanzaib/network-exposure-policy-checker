@@ -1,26 +1,19 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Report an incorrect Network Exposure Policy Checker result or CLI failure
 title: ''
 labels: bug
 assignees: ''
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+## What happened?
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. See error
+Describe the command and the result. Remove private hostnames, addresses, and credentials from logs and policy snippets before posting.
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+## What did you expect?
 
-**Environment**
-- OS: [e.g. macOS 26.4.1, Windows 11, Ubuntu 24.04.4]
-- Version: [e.g. 1.0.0]
+Explain the intended policy decision and the evidence you expected Network Exposure Policy Checker to use.
 
-**Additional context**
-Add any other context or screenshots here.
+## Reproduction
+
+Include a minimal sanitized policy or Compose example, Network Exposure Policy Checker version, operating system, Docker Compose version, and relevant command output. State whether the result came from configuration-only inspection, runtime inspection, or a live probe.

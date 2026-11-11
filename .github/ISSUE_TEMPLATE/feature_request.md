@@ -1,19 +1,15 @@
 ---
 name: Feature request
-about: Suggest an idea for this project
+about: Propose a focused improvement to Network Exposure Policy Checker
 title: ''
 labels: enhancement
 assignees: ''
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+## Use case
 
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
+Describe the deployment boundary and the decision Network Exposure Policy Checker should help verify.
 
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
+## Proposed behavior
 
-**Additional context**
-Add any other context or screenshots about the feature request here.
+Describe the policy, evidence, and output changes you expect. Explain how the behavior would avoid claiming reachability without observation.

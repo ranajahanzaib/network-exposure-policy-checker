@@ -1,10 +1,11 @@
-Fixes #<issue_number_goes_here>
+## Change
 
-> It's a good idea to open an issue first for discussion.
+Describe the behavior or documentation change and why it is needed.
 
-**Description**
-A brief summary of what this PR does and why.
+## Verification
 
-- [ ] Tests pass
-- [ ] README updated if needed
-- [ ] No breaking changes (or described below)
+List the checks run. State whether Docker runtime behavior or remote network reachability was actually tested.
+
+## Security semantics
+
+Explain any change to policy interpretation, evidence validation, coverage, findings, or exit codes. Confirm that examples and test data contain no private addresses or credentials.
