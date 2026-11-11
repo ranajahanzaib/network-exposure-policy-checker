@@ -1,4 +1,4 @@
-use network-exposure-policy-checker::*;
+use network_exposure_policy_checker::*;
 use std::{collections::BTreeMap, net::TcpListener, time::Duration};
 fn policy() -> Policy {
     let mut access = BTreeMap::new();
