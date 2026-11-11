@@ -1,0 +1,3 @@
+# Current limitations
+
+Network Exposure Policy Checker v0.1 examines Docker Compose port publishing and TCP connection acceptance. It does not inspect firewall or cloud security rules. Probe source zones are operator declarations and evidence JSON is unsigned. A plan ID detects accidental modification but does not authenticate the plan. Docker host networking, rootless mode, direct routing, Docker Desktop, and reverse proxies may need separate investigation. A successful TCP connection says nothing about application authorization; a refusal or timeout says nothing about untested routes. UDP is unsupported for verification.

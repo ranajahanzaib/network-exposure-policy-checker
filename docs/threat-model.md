@@ -1,0 +1,3 @@
+# Threat model
+
+Network Exposure Policy Checker compares declared boundaries with Docker port publishing and operator-collected TCP observations. It does not authenticate the probe machine or cryptographically sign evidence. The operator declares the source zone; imported JSON can be edited. A broad binding is possible exposure, not proof of Internet reachability. A refused connection or timeout applies only to the tested source, address, and moment; it cannot prove global inaccessibility. DNS, NAT, firewalls, reverse proxies, direct routing, and Docker Desktop can alter results. Treat incomplete coverage as unknown.

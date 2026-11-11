@@ -1,0 +1,51 @@
+version: 1
+project:
+  name: basic-stack
+  compose_files: [compose.yaml]
+targets:
+  local:
+    addresses: [127.0.0.1]
+  lan:
+    addresses: [192.0.2.10]
+  vpn:
+    addresses: [198.51.100.10]
+  internet:
+    addresses: [example.invalid]
+services:
+  - name: postgres
+    compose_service: postgres
+    sensitivity: high
+    endpoints:
+      - name: database
+        container_port: 5432
+        host_port: 5432
+        protocol: tcp
+        access: { local: allow, lan: deny, vpn: deny, internet: deny }
+  - name: redis
+    compose_service: redis
+    sensitivity: high
+    endpoints:
+      - name: cache
+        container_port: 6379
+        host_port: 6379
+        protocol: tcp
+        access: { local: allow, lan: deny, vpn: deny, internet: deny }
+  - name: api
+    compose_service: api
+    sensitivity: normal
+    endpoints:
+      - name: http
+        container_port: 80
+        host_port: 8080
+        protocol: tcp
+        access: { local: allow, lan: allow, vpn: allow, internet: allow }
+        require_reachable_from: [local]
+  - name: admin
+    compose_service: admin
+    sensitivity: high
+    endpoints:
+      - name: dashboard
+        container_port: 80
+        host_port: 4000
+        protocol: tcp
+        access: { local: allow, lan: deny, vpn: allow, internet: deny }

@@ -1,56 +1,81 @@
-# Project Title
+# Network Exposure Policy Checker
 
-[![GitHub license](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE) [![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen.svg)](./CONTRIBUTING.md)
+Declare intended network reachability. Detect unintended exposure.
 
-One-line description of what this project does and who it's for.
+Network Exposure Policy Checker is a Rust CLI for comparing a Docker Compose deployment's declared access policy with port publishing and operator-collected TCP connection evidence. It keeps configuration warnings distinct from confirmed reachability violations.
 
-## Features
+## Why
 
-- Feature one
-- Feature two
-- Feature three
+An open or broadly bound port does not tell you whether it violates a deployment boundary. A Docker binding to `0.0.0.0` suggests possible exposure but does not prove that a LAN or Internet client can connect. Network Exposure Policy Checker records both facts separately.
 
-## Getting Started
+| Service    | Local | LAN   | VPN   | Internet |
+| ---------- | ----- | ----- | ----- | -------- |
+| PostgreSQL | allow | deny  | deny  | deny     |
+| Redis      | allow | deny  | deny  | deny     |
+| API        | allow | allow | allow | allow    |
+| Admin      | allow | deny  | allow | deny     |
 
-### Prerequisites
+## Install
 
-List anything the user needs to have installed before they can use this project.
-
-### Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/username/repo-name.git
-cd repo-name
-
-# Install dependencies
-# add your install command here
+```sh
+cargo install --path .
 ```
 
-### Usage
+Install from a source checkout with stable Rust. Docker Compose is needed only for `init` and `inspect`.
 
-```bash
-# Add your run command here
+## Quick start
+
+See [the safe example](examples/basic-stack/README.md). From its directory:
+
+```sh
+network-exposure-policy-checker policy validate --file network-exposure-policy-checker.yaml
+network-exposure-policy-checker inspect --policy network-exposure-policy-checker.yaml --config-only --output snapshot.json
+network-exposure-policy-checker plan --policy network-exposure-policy-checker.yaml --snapshot snapshot.json --output plan.json
+network-exposure-policy-checker probe --plan plan.json --vantage local --dry-run
+network-exposure-policy-checker audit --policy network-exposure-policy-checker.yaml --snapshot snapshot.json --format json
 ```
 
-## Contributing
+Omit `--config-only` to request runtime Docker inspection. `init --compose compose.yaml --output network-exposure-policy-checker.yaml` produces a draft with `REVIEW` decisions; review and replace every decision before validation.
 
-We'd love to accept your patches and contributions to this project. There are just a few guidelines you need to follow.
+Run an authorized probe on each independent source machine:
 
-### [Code of Conduct](./CODE_OF_CONDUCT.md)
+```sh
+network-exposure-policy-checker probe --plan plan.json --vantage lan --source-id lan-host-01 --output lan-evidence.json
+```
 
-This project follows the [Contributor Covenant](https://www.contributor-covenant.org/) as its Code of Conduct, and we expect all project participants to adhere to it. Kindly read the [full guide](./CODE_OF_CONDUCT.md) to understand what actions will not be tolerated.
+Then pass one or more `--evidence` files to `audit`. Use `--format json` or `--format sarif` with `--output`. `--fail-on high` exits 1 for findings at or above the threshold. `--require-vantage local,lan` exits 5 unless every planned target in those zones has a connection attempt recorded.
 
-### [Contributing Guide](./CONTRIBUTING.md)
+## Policy
 
-Read our [contributing guide](./CONTRIBUTING.md) to learn about our development process, how to propose bug fixes and improvements, and how to build and test your changes to the project.
+The [example policy](examples/basic-stack/network-exposure-policy-checker.yaml) shows the complete version 1 format. Each endpoint declares all four access decisions. `allow` is permission, not an uptime requirement; `require_reachable_from` adds an availability requirement. `host_port: auto` represents a Docker-assigned host port. UDP can be declared but is not verified.
 
-### Issues
+## Findings and coverage
 
-Feel free to submit issues and enhancement requests. Use the template provided when creating an issue to ensure your request is clear and actionable.
+- `PI001`: a forbidden TCP connection succeeded from the declared zone.
+- `PI002`: a broad Docker host binding may expose a denied endpoint; actual reachability is unknown until probed.
+- `PI003`: a required endpoint refused tested connections.
+- `PI005`: a published host port differs from policy.
+- `PI007`: unsupported networking or protocol.
 
-See the open issues for a complete list of proposed features (and known issues).
+Coverage counts every exact planned target as `verified`, `partially_verified`, or `not_verified`; `--require-vantage` fails unless all targets in that zone were observed. A missing probe remains `not_tested`. A timeout is `inconclusive`, and a refusal applies only to the tested address and source. `explain PI001` through `explain PI007` provide short rule descriptions.
 
-## [License](./LICENSE)
+Exit codes: `0` successful, `1` finding threshold, `2` invalid policy/config, `3` Docker failure, `4` invalid evidence, `5` required vantage missing, `6` I/O or internal error.
 
-This project is licensed under the [MIT License](./LICENSE), meaning that you're free to modify, distribute, and/or use it for any commercial or private project.
+## Limits
+
+Source zones are declared by operators and are not authenticated. Evidence JSON and probe plans are not signed. Plan IDs detect accidental changes but an adversary who can rewrite a plan can recompute its ID; distribute plans through a trusted channel. Probes establish only TCP connection success at a particular address and time; they do not assess application authentication. Static analysis does not prove external reachability. Host networking and unusual Docker routing need independent verification. See [threat model](docs/threat-model.md), [probe model](docs/probe-model.md), and [Docker behavior](docs/docker-behavior.md).
+
+## Development
+
+```sh
+cargo fmt --all --check
+cargo clippy --all-targets --all-features -- -D warnings
+cargo test --all-features
+cargo build --release
+```
+
+See [CI integration](docs/ci-integration.md), [architecture](docs/architecture.md), [limitations](docs/limitations.md), [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and [LICENSE](LICENSE).
+
+## License
+
+Network Exposure Policy Checker is licensed under the MIT License. See [LICENSE](LICENSE).

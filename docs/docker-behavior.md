@@ -1,0 +1,3 @@
+# Docker behavior
+
+Compose `expose` does not publish a host port. `ports` may publish to IPv4 or IPv6 host addresses; Docker Desktop, NAT, firewall rules, and direct routing affect reachability. Host network mode bypasses ordinary published-port interpretation. Network Exposure Policy Checker uses `docker compose config --format json`, `docker compose ps --all --format json`, and `docker inspect` and reports unsupported modes without a clean verdict. See [Docker port publishing](https://docs.docker.com/engine/network/port-publishing/), [Compose ports](https://docs.docker.com/reference/compose-file/services/#ports), and [Docker Desktop networking](https://docs.docker.com/desktop/features/networking/).
