@@ -14,4 +14,4 @@ jobs:
       - run: cargo test --all-features
       - run: cargo build --release
       - run: cargo package --locked
-      - run: cargo run -- policy validate --file examples/basic-stack/network-exposure-policy-checker.yaml
+      - run: cargo run -- policy validate --file examples/basic-stack/portintent.yaml

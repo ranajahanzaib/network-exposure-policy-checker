@@ -28,11 +28,11 @@ Install from a source checkout with stable Rust. Docker Compose is needed only f
 See [the safe example](examples/basic-stack/README.md). From its directory:
 
 ```sh
-network-exposure-policy-checker policy validate --file network-exposure-policy-checker.yaml
-network-exposure-policy-checker inspect --policy network-exposure-policy-checker.yaml --config-only --output snapshot.json
-network-exposure-policy-checker plan --policy network-exposure-policy-checker.yaml --snapshot snapshot.json --output plan.json
+network-exposure-policy-checker policy validate --file portintent.yaml
+network-exposure-policy-checker inspect --policy portintent.yaml --config-only --output snapshot.json
+network-exposure-policy-checker plan --policy portintent.yaml --snapshot snapshot.json --output plan.json
 network-exposure-policy-checker probe --plan plan.json --vantage local --dry-run
-network-exposure-policy-checker audit --policy network-exposure-policy-checker.yaml --snapshot snapshot.json --format json
+network-exposure-policy-checker audit --policy portintent.yaml --snapshot snapshot.json --format json
 ```
 
 Omit `--config-only` to request runtime Docker inspection. `init --compose compose.yaml --output network-exposure-policy-checker.yaml` produces a draft with `REVIEW` decisions; review and replace every decision before validation.
