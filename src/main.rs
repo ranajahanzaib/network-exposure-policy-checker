@@ -153,7 +153,7 @@ fn run() -> Result<i32> {
             let v: serde_json::Value = serde_json::from_slice(&raw.stdout)?;
             let mut text=String::from("# DRAFT: replace every REVIEW value with allow or deny before validation.\nversion: 1\nproject:\n  name: deployment\n  compose_files:\n");
             text.push_str(&format!(
-                "    - {}\ntargets:\n  local:\n    addresses: [127.0.0.1]\nservices:\n",
+                "    - {}\ntargets:\n  local:\n    addresses: [127.0.0.1]\n  lan:\n    addresses: [192.0.2.10]\n  vpn:\n    addresses: [198.51.100.10]\n  internet:\n    addresses: [example.invalid]\nservices:\n",
                 compose.display()
             ));
             if let Some(services) = v.get("services").and_then(|x| x.as_object()) {
@@ -162,11 +162,21 @@ fn run() -> Result<i32> {
                     let ports = svc.get("ports").and_then(|x| x.as_array());
                     if let Some(ports) = ports {
                         for (i, p) in ports.iter().enumerate() {
-                            let cp = p.get("target").and_then(|x| x.as_u64()).unwrap_or(0);
+                            let cp = p
+                                .get("target")
+                                .and_then(|x| x.as_u64())
+                                .or_else(|| p.get("target").and_then(|x| x.as_str())?.parse().ok())
+                                .unwrap_or(0);
                             let hp = p
                                 .get("published")
                                 .and_then(|x| x.as_str())
-                                .unwrap_or("auto");
+                                .map(|s| s.to_string())
+                                .or_else(|| {
+                                    p.get("published")
+                                        .and_then(|x| x.as_u64())
+                                        .map(|n| n.to_string())
+                                })
+                                .unwrap_or_else(|| "auto".to_string());
                             text.push_str(&format!("      - name: endpoint-{}\n        container_port: {}\n        host_port: {}\n        protocol: tcp\n        access:\n          local: REVIEW\n          lan: REVIEW\n          vpn: REVIEW\n          internet: REVIEW\n",i+1,cp,hp));
                         }
                     } else {
@@ -335,17 +345,21 @@ fn run() -> Result<i32> {
             Ok(0)
         }
         Cmd::Doctor => {
-            let status = std::process::Command::new("docker")
+            let output = std::process::Command::new("docker")
                 .args(["compose", "version"])
-                .status();
-            println!(
-                "Docker Compose: {}",
-                if status.is_ok_and(|s| s.success()) {
-                    "available"
-                } else {
-                    "unavailable"
+                .output();
+            match output {
+                Ok(out) if out.status.success() => {
+                    let ver = String::from_utf8_lossy(&out.stdout).trim().to_string();
+                    if !ver.is_empty() {
+                        println!("{ver}");
+                    }
+                    println!("Docker Compose: available");
                 }
-            );
+                _ => {
+                    println!("Docker Compose: unavailable");
+                }
+            }
             Ok(0)
         }
     }
